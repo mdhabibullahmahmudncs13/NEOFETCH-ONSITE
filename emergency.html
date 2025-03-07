@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Emergency Alerts</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background-color: #8b0000;
+      color: white;
+      padding: 15px 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo i {
+      font-size: 24px;
+    }
+
+    .logo h1 {
+      font-size: 24px;
+    }
+
+    .current-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-indicator {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #4CAF50;
+    }
+
+    .status-text {
+      font-weight: bold;
+    }
+
+    .emergency-panel {
+      background-color: #ff3333;
+      color: white;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+      display: none;
+    }
+
+    .emergency-panel.active {
+      display: block;
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    .emergency-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .emergency-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .emergency-time {
+      font-size: 14px;
+    }
+
+    .emergency-message {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .alert-list {
+      background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .alert-header {
+      background-color: #333;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .alert-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .alert-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .filter-dropdown {
+      padding: 5px 10px;
+      border-radius: 3px;
+      border: none;
+      background-color: #444;
+      color: white;
+    }
+
+    .alert-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.3s;
+    }
+
+    .alert-item:hover {
+      background-color: #f9f9f9;
+    }
+
+    .alert-item.high {
+      border-left: 5px solid #ff3333;
+    }
+
+    .alert-item.medium {
+      border-left: 5px solid #ff9800;
+    }
+
+    .alert-item.low {
+      border-left: 5px solid #4CAF50;
+    }
+
+    .alert-item-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .alert-item-title {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .alert-item-time {
+      color: #777;
+      font-size: 14px;
+    }
+
+    .alert-item-content {
+      color: #555;
+      line-height: 1.4;
+    }
+
+    .alert-severity {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: white;
+      margin-right: 10px;
+    }
+
+    .severity-high {
+      background-color: #ff3333;
+    }
+
+    .severity-medium {
+      background-color: #ff9800;
+    }
+
+    .severity-low {
+      background-color: #4CAF50;
+    }
+
+    .emergency-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-button {
+      padding: 5px 15px;
+      border: none;
+      border-radius: 3px;
+      background-color: white;
+      color: #ff3333;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .no-alerts {
+      padding: 30px;
+      text-align: center;
+      color: #777;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 10% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 5px;
+      position: relative;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .subscribe-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .form-group input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+
+    .submit-button {
+      padding: 10px;
+      background-color: #8b0000;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .notifications-panel {
+      margin-top: 20px;
+      background-color: #e9e9e9;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .notifications-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #8b0000;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+
+    .notification-option {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .notification-option:last-child {
+      border-bottom: none;
+    }
+
+    .test-alert-button {
+      background-color: #8b0000;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 3px;
+      margin-top: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      
+      .emergency-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+      
+      .alert-header {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-content">
+      <div class="logo">
+        <i>🚨</i>
+        <h1>NEOFETCH Campus Emergency Alerts</h1>
+      </div>
+      <div class="current-status">
+        <div class="status-indicator" id="status-indicator"></div>
+        <span class="status-text" id="status-text">All Clear</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="emergency-panel" id="emergency-panel">
+      <div class="emergency-header">
+        <div class="emergency-title">
+          <i>⚠️</i>
+          <span id="emergency-title">EMERGENCY ALERT</span>
+        </div>
+        <div class="emergency-time" id="emergency-time">Mar 7, 2025 - 14:32</div>
+      </div>
+      <div class="emergency-message" id="emergency-message">
+        There is currently no active emergency on campus.
+      </div>
+      <div class="emergency-actions">
+        <button class="action-button" id="more-info-btn">More Info</button>
+        <button class="action-button" id="dismiss-btn">Dismiss</button>
+      </div>
+    </div>
+
+    <div class="alert-list">
+      <div class="alert-header">
+        <div class="alert-title">Recent Alerts</div>
+        <div class="alert-actions">
+          <select class="filter-dropdown" id="filter-dropdown">
+            <option value="all">All Alerts</option>
+            <option value="high">High Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="low">Low Priority</option>
+          </select>
+          <button class="action-button" id="subscribe-btn">Subscribe</button>
+        </div>
+      </div>
+      <div id="alerts-container">
+        <!-- Alerts will be populated here -->
+        <div class="no-alerts" id="no-alerts">
+          No recent alerts to display
+        </div>
+      </div>
+    </div>
+
+    <div class="notifications-panel">
+      <div class="notifications-title">
+        <i>🔔</i>
+        <span>Notification Preferences</span>
+      </div>
+      <div class="notification-option">
+        <span>Email Notifications</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="email-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="notification-option">
+        <span>SMS Notifications</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="sms-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="notification-option">
+        <span>Push Notifications</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="push-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <button class="test-alert-button" id="test-alert-btn">Test Emergency Alert</button>
+  </div>
+
+  <!-- Subscribe Modal -->
+  <div class="modal" id="subscribe-modal">
+    <div class="modal-content">
+      <span class="close-button" id="close-modal">&times;</span>
+      <h2 class="modal-title">Subscribe to Emergency Alerts</h2>
+      <form class="subscribe-form" id="subscribe-form">
+        <div class="form-group">
+          <label for="name">Full Name:</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address:</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number (for SMS):</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+        <button type="submit" class="submit-button">Subscribe</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Sample alert data
+    const alerts = [
+      {
+        id: 1,
+        title: "Severe Weather Warning",
+        message: "Heavy thunderstorms expected on campus. Take shelter immediately and avoid open areas.",
+        time: "Mar 7, 2025 - 13:45",
+        severity: "high",
+        active: true
+      },
+      {
+        id: 2,
+        title: "Network Maintenance",
+        message: "Campus WiFi will be down for maintenance from 2 AM to 4 AM tomorrow.",
+        time: "Mar 7, 2025 - 11:20",
+        severity: "low",
+        active: false
+      },
+      {
+        id: 3,
+        title: "Building Evacuation",
+        message: "Engineering Building evacuated due to fire alarm. Avoid area until further notice.",
+        time: "Mar 6, 2025 - 16:30",
+        severity: "medium",
+        active: false
+      }
+    ];
+
+    // DOM elements
+    const emergencyPanel = document.getElementById('emergency-panel');
+    const emergencyTitle = document.getElementById('emergency-title');
+    const emergencyMessage = document.getElementById('emergency-message');
+    const emergencyTime = document.getElementById('emergency-time');
+    const statusIndicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+    const alertsContainer = document.getElementById('alerts-container');
+    const noAlertsMessage = document.getElementById('no-alerts');
+    const filterDropdown = document.getElementById('filter-dropdown');
+    const subscribeBtn = document.getElementById('subscribe-btn');
+    const subscribeModal = document.getElementById('subscribe-modal');
+    const closeModal = document.getElementById('close-modal');
+    const subscribeForm = document.getElementById('subscribe-form');
+    const dismissBtn = document.getElementById('dismiss-btn');
+    const moreInfoBtn = document.getElementById('more-info-btn');
+    const testAlertBtn = document.getElementById('test-alert-btn');
+
+    // Initialize the page
+    function init() {
+      updateStatusIndicator();
+      renderAlerts(alerts);
+      setupEventListeners();
+      checkForActiveEmergencies();
+    }
+
+    // Update the status indicator based on active emergencies
+    function updateStatusIndicator() {
+      const activeEmergencies = alerts.filter(alert => alert.active && alert.severity === 'high');
+      
+      if (activeEmergencies.length > 0) {
+        statusIndicator.style.backgroundColor = '#ff3333';
+        statusText.textContent = 'Emergency Alert Active';
+      } else {
+        statusIndicator.style.backgroundColor = '#4CAF50';
+        statusText.textContent = 'All Clear';
+      }
+    }
+
+    // Check for active emergencies and show in the emergency panel
+    function checkForActiveEmergencies() {
+      const activeEmergencies = alerts.filter(alert => alert.active && alert.severity === 'high');
+      
+      if (activeEmergencies.length > 0) {
+        const emergency = activeEmergencies[0];
+        emergencyTitle.textContent = emergency.title;
+        emergencyMessage.textContent = emergency.message;
+        emergencyTime.textContent = emergency.time;
+        emergencyPanel.classList.add('active');
+      } else {
+        emergencyPanel.classList.remove('active');
+      }
+    }
+
+    // Render alerts in the alerts container
+    function renderAlerts(alertsToRender) {
+      if (alertsToRender.length === 0) {
+        noAlertsMessage.style.display = 'block';
+        alertsContainer.innerHTML = '';
+        return;
+      }
+      
+      noAlertsMessage.style.display = 'none';
+      alertsContainer.innerHTML = '';
+      
+      alertsToRender.forEach(alert => {
+        const alertItem = document.createElement('div');
+        alertItem.className = `alert-item ${alert.severity}`;
+        
+        let severityLabel = '';
+        switch(alert.severity) {
+          case 'high':
+            severityLabel = '<span class="alert-severity severity-high">High Priority</span>';
+            break;
+          case 'medium':
+            severityLabel = '<span class="alert-severity severity-medium">Medium Priority</span>';
+            break;
+          case 'low':
+            severityLabel = '<span class="alert-severity severity-low">Low Priority</span>';
+            break;
+        }
+        
+        alertItem.innerHTML = `
+          <div class="alert-item-header">
+            <div class="alert-item-title">${severityLabel}${alert.title}</div>
+            <div class="alert-item-time">${alert.time}</div>
+          </div>
+          <div class="alert-item-content">${alert.message}</div>
+        `;
+        
+        alertsContainer.appendChild(alertItem);
+      });
+    }
+
+    // Filter alerts based on severity
+    function filterAlerts(severity) {
+      if (severity === 'all') {
+        renderAlerts(alerts);
+      } else {
+        const filteredAlerts = alerts.filter(alert => alert.severity === severity);
+        renderAlerts(filteredAlerts);
+      }
+    }
+
+    // Create a test emergency alert
+    function createTestAlert() {
+      const newAlert = {
+        id: alerts.length + 1,
+        title: "TEST EMERGENCY ALERT",
+        message: "This is a test of the campus emergency alert system. No action is required.",
+        time: new Date().toLocaleString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        severity: "high",
+        active: true
+      };
+      
+      alerts.unshift(newAlert);
+      updateStatusIndicator();
+      renderAlerts(alerts);
+      checkForActiveEmergencies();
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+      // Filter dropdown change
+      filterDropdown.addEventListener('change', (e) => {
+        filterAlerts(e.target.value);
+      });
+      
+      // Subscribe button click
+      subscribeBtn.addEventListener('click', () => {
+        subscribeModal.style.display = 'block';
+      });
+      
+      // Close modal button
+      closeModal.addEventListener('click', () => {
+        subscribeModal.style.display = 'none';
+      });
+      
+      // Click outside modal to close
+      window.addEventListener('click', (e) => {
+        if (e.target === subscribeModal) {
+          subscribeModal.style.display = 'none';
+        }
+      });
+      
+      // Subscribe form submit
+      subscribeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('You have successfully subscribed to campus emergency alerts.');
+        subscribeModal.style.display = 'none';
+        subscribeForm.reset();
+      });
+      
+      // Dismiss emergency alert
+      dismissBtn.addEventListener('click', () => {
+        emergencyPanel.classList.remove('active');
+        alerts.forEach(alert => {
+          if (alert.active) {
+            alert.active = false;
+          }
+        });
+        updateStatusIndicator();
+      });
+      
+      // More info button
+      moreInfoBtn.addEventListener('click', () => {
+        // In a real app, this would link to detailed emergency information
+        alert('This would display more detailed information about the current emergency.');
+      });
+      
+      // Test alert button
+      testAlertBtn.addEventListener('click', () => {
+        createTestAlert();
+      });
+    }
+
+    // Initialize the page when DOM is loaded
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

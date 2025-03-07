@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Emergency Alerts - Admin Control</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #c00;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+        }
+
+        .alert-icon {
+            font-size: 1.8rem;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-badge {
+            background-color: white;
+            color: #c00;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+            color: #444;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-active {
+            background-color: #4CAF50;
+        }
+
+        .status-inactive {
+            background-color: #F44336;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Button Styles */
+        .btn {
+            cursor: pointer;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background-color: #c00;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #a00;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-danger {
+            background-color: #F44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn-success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #388E3C;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        /* Alert Preview */
+        .alert-preview {
+            border: 2px solid #f8d7da;
+            background-color: #fff5f5;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .alert-preview.active {
+            display: block;
+        }
+
+        /* Alert List Styles */
+        .alert-list {
+            list-style: none;
+        }
+
+        .alert-item {
+            padding: 1rem;
+            border-left: 4px solid #ccc;
+            background-color: #f9f9f9;
+            margin-bottom: 0.8rem;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .alert-item.emergency {
+            border-left-color: #F44336;
+        }
+
+        .alert-item.warning {
+            border-left-color: #FF9800;
+        }
+
+        .alert-item.info {
+            border-left-color: #2196F3;
+        }
+
+        .alert-item.success {
+            border-left-color: #4CAF50;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .alert-type {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .type-emergency {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .type-warning {
+            background-color: #fff8e1;
+            color: #ff8f00;
+        }
+
+        .type-info {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .type-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .alert-time {
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .alert-message {
+            font-size: 0.95rem;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+
+        /* Status Panel Styles */
+        .status-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-card {
+            padding: 1rem;
+            border-radius: 4px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .status-card.active {
+            background-color: #4CAF50;
+        }
+
+        .status-card.pending {
+            background-color: #FF9800;
+        }
+
+        .status-card.resolved {
+            background-color: #2196F3;
+        }
+
+        .status-card.emergency {
+            background-color: #F44336;
+        }
+
+        .status-count {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+        }
+
+        /* Notification Badge */
+        .notification-badge {
+            background-color: #FF9800;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <span class="alert-icon">⚠️</span>
+            <h1>Campus Emergency Alert System</h1>
+        </div>
+        <div class="admin-info">
+            <span class="admin-badge">ADMIN</span>
+            <span id="admin-name">Safety Officer</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Status Overview -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Alert Status Overview</h2>
+                <div class="status-indicator">
+                    <div class="status-dot status-active"></div>
+                    <span>System Active</span>
+                </div>
+            </div>
+            <div class="status-panel">
+                <div class="status-card active">
+                    <div class="status-count" id="active-count">2</div>
+                    <div class="status-label">Active Alerts</div>
+                </div>
+                <div class="status-card emergency">
+                    <div class="status-count" id="emergency-count">1</div>
+                    <div class="status-label">Emergency Alerts</div>
+                </div>
+                <div class="status-card pending">
+                    <div class="status-count" id="pending-count">3</div>
+                    <div class="status-label">Pending Alerts</div>
+                </div>
+                <div class="status-card resolved">
+                    <div class="status-count" id="resolved-count">8</div>
+                    <div class="status-label">Resolved Alerts</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- New Alert Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Create New Alert</h2>
+                </div>
+                <form id="alert-form">
+                    <div class="form-group">
+                        <label for="alert-title">Alert Title</label>
+                        <input type="text" id="alert-title" placeholder="Enter alert title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert-type">Alert Type</label>
+                        <select id="alert-type" required>
+                            <option value="">Select alert type</option>
+                            <option value="emergency">Emergency</option>
+                            <option value="warning">Warning</option>
+                            <option value="info">Information</option>
+                            <option value="success">All Clear</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert-message">Alert Message</label>
+                        <textarea id="alert-message" placeholder="Enter detailed alert message" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="target-audience">Target Audience</label>
+                        <select id="target-audience" required>
+                            <option value="all">All Campus</option>
+                            <option value="students">Students Only</option>
+                            <option value="faculty">Faculty Only</option>
+                            <option value="staff">Staff Only</option>
+                            <option value="customized">Custom Selection</option>
+                        </select>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" id="preview-btn" class="btn btn-secondary">Preview</button>
+                        <button type="submit" class="btn btn-primary">Send Alert</button>
+                    </div>
+                    
+                    <!-- Alert Preview -->
+                    <div class="alert-preview" id="alert-preview">
+                        <h3 id="preview-title"></h3>
+                        <p id="preview-message"></p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Recent Alerts</h2>
+                    <button id="test-alert-btn" class="btn btn-sm btn-secondary">Send Test Alert</button>
+                </div>
+                <ul class="alert-list" id="alert-list">
+                    <!-- Alerts will be generated by JavaScript -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Alert</h3>
+                <button class="modal-close" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to send this emergency alert to all targeted recipients?</p>
+                <p>This action cannot be undone and will immediately notify all recipients.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-alert">Cancel</button>
+                <button class="btn btn-danger" id="confirm-alert">Send Alert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Sample data for recent alerts
+        const sampleAlerts = [
+            {
+                id: 1,
+                title: "Active Shooter Situation",
+                type: "emergency",
+                message: "Active shooter reported near Science Building. Shelter in place immediately. Lock doors, turn off lights, and remain quiet. Police responding.",
+                timestamp: "2025-03-07T09:45:00",
+                status: "active"
+            },
+            {
+                id: 2,
+                title: "Campus Closure Due to Weather",
+                type: "warning",
+                message: "Campus will be closed starting at 2 PM today due to severe weather forecast. All evening classes canceled. Stay tuned for updates.",
+                timestamp: "2025-03-07T08:30:00",
+                status: "active"
+            },
+            {
+                id: 3,
+                title: "Network Outage in Dorms",
+                type: "info",
+                message: "IT is working on resolving network issues in East Campus dormitories. Expected resolution by 5 PM today.",
+                timestamp: "2025-03-06T14:20:00",
+                status: "resolved"
+            },
+            {
+                id: 4,
+                title: "Water Main Break",
+                type: "warning",
+                message: "Water main break near Library. Area cordoned off. Please avoid the main quad and take alternate routes.",
+                timestamp: "2025-03-06T10:15:00",
+                status: "resolved"
+            },
+            {
+                id: 5,
+                title: "All Clear: Fire Alarm Test",
+                type: "success",
+                message: "The scheduled fire alarm test in the Engineering Building has been completed. Normal operations resumed.",
+                timestamp: "2025-03-05T15:45:00",
+                status: "resolved"
+            }
+        ];
+
+        // DOM Elements
+        const alertForm = document.getElementById('alert-form');
+        const alertTitle = document.getElementById('alert-title');
+        const alertType = document.getElementById('alert-type');
+        const alertMessage = document.getElementById('alert-message');
+        const targetAudience = document.getElementById('target-audience');
+        const previewBtn = document.getElementById('preview-btn');
+        const alertPreview = document.getElementById('alert-preview');
+        const previewTitle = document.getElementById('preview-title');
+        const previewMessage = document.getElementById('preview-message');
+        const alertList = document.getElementById('alert-list');
+        const testAlertBtn = document.getElementById('test-alert-btn');
+        const confirmModal = document.getElementById('confirm-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const cancelAlertBtn = document.getElementById('cancel-alert');
+        const confirmAlertBtn = document.getElementById('confirm-alert');
+        
+        // Dashboard counters
+        const activeCount = document.getElementById('active-count');
+        const emergencyCount = document.getElementById('emergency-count');
+        const pendingCount = document.getElementById('pending-count');
+        const resolvedCount = document.getElementById('resolved-count');
+
+        // Current alerts array
+        let alerts = [...sampleAlerts];
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAlerts();
+            updateCounts();
+        });
+
+        // Preview Alert
+        previewBtn.addEventListener('click', () => {
+            if (alertTitle.value && alertMessage.value) {
+                previewTitle.textContent = alertTitle.value;
+                previewMessage.textContent = alertMessage.value;
+                alertPreview.className = 'alert-preview active';
+            } else {
+                alert('Please fill in the title and message fields to preview');
+            }
+        });
+
+        // Submit Alert Form
+        alertForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (alertType.value === 'emergency') {
+                // Show confirmation modal for emergency alerts
+                confirmModal.classList.add('active');
+            } else {
+                // Directly submit non-emergency alerts
+                submitAlert();
+            }
+        });
+
+        // Close Modal
+        closeModalBtn.addEventListener('click', () => {
+            confirmModal.classList.remove('active');
+        });
+
+        // Cancel Alert Button
+        cancelAlertBtn.addEventListener('click', () => {
+            confirmModal.classList.remove('active');
+        });
+
+        // Confirm Alert Button
+        confirmAlertBtn.addEventListener('click', () => {
+            confirmModal.classList.remove('active');
+            submitAlert();
+        });
+
+        // Test Alert Button
+        testAlertBtn.addEventListener('click', () => {
+            const testAlert = {
+                id: Date.now(),
+                title: "TEST ALERT - Please Ignore",
+                type: "info",
+                message: "This is a test of the emergency alert system. No action is required.",
+                timestamp: new Date().toISOString(),
+                status: "active"
+            };
+            
+            alerts.unshift(testAlert);
+            renderAlerts();
+            updateCounts();
+            alert("Test alert sent successfully!");
+        });
+
+        // Submit Alert Function
+        function submitAlert() {
+            const newAlert = {
+                id: Date.now(),
+                title: alertTitle.value,
+                type: alertType.value,
+                message: alertMessage.value,
+                timestamp: new Date().toISOString(),
+                status: "active"
+            };
+            
+            // Add to alerts array
+            alerts.unshift(newAlert);
+            
+            // Update UI
+            renderAlerts();
+            updateCounts();
+            alertForm.reset();
+            alertPreview.className = 'alert-preview';
+            
+            // Show confirmation
+            alert(`Alert "${newAlert.title}" has been sent to ${targetAudience.value === 'all' ? 'all campus' : targetAudience.value}!`);
+        }
+
+        // Render Alerts Function
+        function renderAlerts() {
+            alertList.innerHTML = '';
+            
+            alerts.slice(0, 5).forEach(alert => {
+                const alertItem = document.createElement('li');
+                alertItem.className = `alert-item ${alert.type}`;
+                
+                const formattedDate = new Date(alert.timestamp).toLocaleString();
+                
+                alertItem.innerHTML = `
+                    <div class="alert-header">
+                        <span class="alert-title">${alert.title}</span>
+                        <span class="alert-type type-${alert.type}">${alert.type}</span>
+                    </div>
+                    <div class="alert-time">${formattedDate}</div>
+                    <div class="alert-message">${alert.message}</div>
+                    <div class="alert-actions">
+                        <button class="btn btn-sm btn-secondary edit-btn" data-id="${alert.id}">Edit</button>
+                        ${alert.status === 'active' ? 
+                            `<button class="btn btn-sm btn-success resolve-btn" data-id="${alert.id}">Resolve</button>` : 
+                            `<button class="btn btn-sm btn-primary reactivate-btn" data-id="${alert.id}">Reactivate</button>`
+                        }
+                        <button class="btn btn-sm btn-danger delete-btn" data-id="${alert.id}">Delete</button>
+                    </div>
+                `;
+                
+                alertList.appendChild(alertItem);
+            });
+            
+            // Add event listeners to the buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    editAlert(id);
+                });
+            });
+            
+            document.querySelectorAll('.resolve-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    resolveAlert(id);
+                });
+            });
+            
+            document.querySelectorAll('.reactivate-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    reactivateAlert(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    deleteAlert(id);
+                });
+            });
+        }
+
+        // Edit Alert
+        function editAlert(id) {
+            const alert = alerts.find(a => a.id === id);
+            if (alert) {
+                alertTitle.value = alert.title;
+                alertType.value = alert.type;
+                alertMessage.value = alert.message;
+                
+                // Scroll to form
+                alertForm.scrollIntoView({ behavior: 'smooth' });
+                
+                // Delete the original alert
+                alerts = alerts.filter(a => a.id !== id);
+                renderAlerts();
+                updateCounts();
+            }
+        }
+
+        // Resolve Alert
+        function resolveAlert(id) {
+            const alertIndex = alerts.findIndex(a => a.id === id);
+            if (alertIndex !== -1) {
+                alerts[alertIndex].status = 'resolved';
+                renderAlerts();
+                updateCounts();
+                alert(`Alert "${alerts[alertIndex].title}" has been resolved.`);
+            }
+        }
+
+        // Reactivate Alert
+        function reactivateAlert(id) {
+            const alertIndex = alerts.findIndex(a => a.id === id);
+            if (alertIndex !== -1) {
+                alerts[alertIndex].status = 'active';
+                renderAlerts();
+                updateCounts();
+                alert(`Alert "${alerts[alertIndex].title}" has been reactivated.`);
+            }
+        }
+
+        // Delete Alert
+        function deleteAlert(id) {
+            if (confirm('Are you sure you want to delete this alert?')) {
+                alerts = alerts.filter(a => a.id !== id);
+                renderAlerts();
+                updateCounts();
+            }
+        }
+
+        // Update Counts
+        function updateCounts() {
+            const active = alerts.filter(a => a.status === 'active').length;
+            const emergency = alerts.filter(a => a.type === 'emergency' && a.status === 'active').length;
+            const pending = 3; // Mock data for pending alerts
+            const resolved = alerts.filter(a => a.status === 'resolved').length;
+            
+            activeCount.textContent = active;
+            emergencyCount.textContent = emergency;
+            pendingCount.textContent = pending;
+            resolvedCount.textContent = resolved;
+        }
+    </script>
+</body>
+</html>

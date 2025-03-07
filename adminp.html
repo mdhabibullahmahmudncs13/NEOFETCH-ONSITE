@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -844,3 +845,82 @@
                     status: 'pending',
                     description: itemDescription
                 });
+populateLostItemsTable();
+} else {
+    const concernType = document.getElementById('concernType').value;
+    const priority = document.getElementById('priority').value;
+    const concernDetails = document.getElementById('concernDetails').value;
+
+    if (!concernType || !priority || !concernDetails) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    const newId = 'SC-' + String(securityConcerns.length + 1).padStart(3, '0');
+
+    securityConcerns.unshift({
+        id: newId,
+        type: concernType,
+        location: location,
+        reportedBy: reporterName,
+        date: today,
+        priority: priority,
+        status: 'pending',
+        details: concernDetails
+    });
+
+    populateSecurityConcernsTable();
+}
+
+toggleModal('addReportModal');
+alert('Report submitted successfully!');
+}
+
+// Update status of an item or concern
+function updateStatus(type, id) {
+const newStatus = prompt('Enter new status (pending, in-progress, resolved):');
+if (!newStatus || !['pending', 'in-progress', 'resolved'].includes(newStatus)) {
+    alert('Invalid status entered');
+    return;
+}
+
+if (type === 'lost') {
+    const item = lostItems.find(i => i.id === id);
+    if (item) {
+        item.status = newStatus;
+        populateLostItemsTable();
+    }
+} else {
+    const concern = securityConcerns.find(c => c.id === id);
+    if (concern) {
+        concern.status = newStatus;
+        populateSecurityConcernsTable();
+    }
+}
+
+alert('Status updated successfully!');
+}
+
+// Helper function to capitalize the first letter of a string
+function capitalizeFirstLetter(string) {
+return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// Helper function to get priority class
+function getPriorityClass(priority) {
+switch (priority) {
+    case 'low':
+        return 'pending';
+    case 'medium':
+        return 'in-progress';
+    case 'high':
+        return 'pending';
+    case 'urgent':
+        return 'urgent';
+    default:
+        return '';
+}
+}
+</script>
+</body>
+</html>
